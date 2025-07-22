@@ -22,7 +22,6 @@ add_executable(PIIScanner
 
 target_include_directories(PIIScanner PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}
-    ${LLAMA_DIR}/include
 )
 
 find_package(nlohmann_json CONFIG REQUIRED)
