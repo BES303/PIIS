@@ -1,4 +1,5 @@
 #include <PIIScanner.h>
+#include <re2/re2.h>
 
 std::map<std::string, std::vector<std::string>> RegexStrategy::scan(const std::string& text)
 {
@@ -6,19 +7,28 @@ std::map<std::string, std::vector<std::string>> RegexStrategy::scan(const std::s
 
     for (const auto& [type, regexList] : _patterns)
     {
-        for (const auto& re : regexList)
+        for (const auto& pattern : regexList)
         {
             try
             {
-                std::sregex_iterator begin(text.begin(), text.end(), re);
-                std::sregex_iterator end;
+                re2::RE2 re(pattern);
 
-                for (auto it = begin; it != end; ++it)
-                    result[type].push_back(it->str());
+                if (!re.ok())
+                {
+                    std::cerr << "RegexStrategy: Invalid regex pattern for type '" << type << "': " << re.error() << std::endl;
+                    continue;
+                }
+
+                re2::StringPiece input(text);
+                std::string matchData;
+                
+                while (RE2::FindAndConsume(&input, re, &matchData))
+                    result[type].push_back(matchData);
+
             }
-            catch (const std::regex_error& e)
+            catch (const std::exception& e)
             {
-                std::cerr << "Regex error for pattern " << type << ": " << e.what() << std::endl;
+                std::cerr << "RegexStrategy: Error processing pattern type '" << type << "': " << e.what() << std::endl;
             }
         }
     }
@@ -36,12 +46,14 @@ std::map<std::string, std::vector<std::string>> KeywordStrategy::scan(const std:
         for (const auto& keyword : keywords)
         {
             size_t pos = 0;
+            size_t matchCount = 0;
             while ((pos = lowerText.find(keyword, pos)) != std::string::npos)
             {
                 if ((pos == 0 || !std::isalnum(lowerText[pos - 1])) &&
                     (pos + keyword.size() == lowerText.size() || !std::isalnum(lowerText[pos + keyword.size()])))
                 {
                     result[category].push_back(text.substr(pos, keyword.size()));
+                    matchCount++;
                 }
                 pos += keyword.size();
             }
