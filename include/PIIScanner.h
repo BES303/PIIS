@@ -5,6 +5,7 @@
 #include <map>
 #include <regex>
 #include <atomic>
+#include <re2/re2.h>
 
 class IStrategyScanner
 {
@@ -19,12 +20,19 @@ class RegexStrategy: public IStrategyScanner
 {
 public:
     explicit RegexStrategy(const std::map<std::string, std::vector<std::string>>& patterns)
-        : _patterns(patterns) {}
+    {
+        for (const auto& [type, regexList] : patterns)
+        {
+            for (const auto& pattern : regexList)
+                _cmpPatterns[type].push_back(std::make_unique<re2::RE2>(pattern));
+
+        }
+    }
 
     std::map<std::string, std::vector<std::string>> scan(const std::string& text) override;
 
 private:
-    std::map<std::string, std::vector<std::string>> _patterns;
+    std::map<std::string, std::vector<std::unique_ptr<re2::RE2>>> _cmpPatterns;
 };
 
 class KeywordStrategy: public IStrategyScanner

@@ -12,7 +12,7 @@ class IPIIResultExporter
 {
 public:
     virtual ~IPIIResultExporter() = default;
-    virtual void processFileResults(const std::string& filePath,
+    virtual void processFileResults(const std::filesystem::path& filePath,
         const std::map<std::string, std::vector<std::string>>& results, double duration) = 0;
 
     virtual void finalize(const PIIGeneralStats::Stats& stats) = 0;
@@ -21,7 +21,7 @@ public:
 class ConsoleExporter : public IPIIResultExporter
 {
 public:
-    void processFileResults(const std::string& filePath,
+    void processFileResults(const std::filesystem::path& filePath,
         const std::map<std::string, std::vector<std::string>>& results, double duration) override;
 
     void finalize(const PIIGeneralStats::Stats& stats) override;
@@ -30,18 +30,16 @@ public:
 class JsonExporter : public IPIIResultExporter
 {
 public:
-    explicit JsonExporter(const std::string& outputFile);
+    explicit JsonExporter(const std::filesystem::path& outputFile);
     ~JsonExporter();
 
-    void processFileResults(const std::string& filePath,
+    void processFileResults(const std::filesystem::path& filePath,
         const std::map<std::string, std::vector<std::string>>& results, double duration) override;
 
     void finalize(const PIIGeneralStats::Stats& stats) override;
 private:
-    std::string outputFile;
+    std::filesystem::path outputFile;
     nlohmann::json jsonData;
-
-    void finalizeAndWrite();
 };
 
 #endif // PIIRESULTHANDLER_H

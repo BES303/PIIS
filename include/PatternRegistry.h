@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include <filesystem>
 #include <memory>
 
 class IPatternProvider
@@ -19,7 +20,7 @@ class PatternRegistry
 {
 public:
     void registryProvider(const std::string& type, std::function<std::unique_ptr<IPatternProvider>()> creator);
-    void loadPatterns(const std::string& providerType, const std::string& configFile = "");
+    void loadPatterns(const std::string& providerType, const std::filesystem::path& configFile = "");
     const auto& getPatterns() const { return _patterns; }
     const auto& getKeywords() const { return _keywords; }
 

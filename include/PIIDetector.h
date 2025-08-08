@@ -8,7 +8,7 @@ class PIIDetector
 {
 public:
     explicit PIIDetector(std::unique_ptr<IStrategyScanner> _strategy,
-        const std::string& jsonOutput = ""): _strategy(std::move(_strategy))
+        const std::filesystem::path& jsonOutput = ""): _strategy(std::move(_strategy))
     {
         _exporters.push_back(std::make_unique<ConsoleExporter>());
 
@@ -21,7 +21,7 @@ public:
         _exporters.push_back(std::move(exporter));
     }
 
-    void scan(const std::string& data, const std::string& filePath)
+    void scan(const std::string& data, const std::filesystem::path& filePath)
     {
         auto start = std::chrono::high_resolution_clock::now();
         auto results = _strategy->scan(data);

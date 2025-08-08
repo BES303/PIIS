@@ -34,11 +34,14 @@ ScanConfig clp::parse()
 {
     ScanConfig config;
 
-    if (_result.count("file"))
+    if (_result.count("file")) {
         config.filePath = _result["file"].as<std::string>();
-    
-    if (_result.count("directory"))
+
+    }
+
+    if (_result.count("directory")) {
         config.directoryPath = _result["directory"].as<std::string>();
+    }
     
     config.recursive = _result["recursive"].as<bool>();
     config.strategy = _result["strategy"].as<std::string>();

@@ -5,14 +5,15 @@
 #include <vector>
 #include <map>
 
-struct ScanConfig
-{
-    std::string filePath;
-    std::string directoryPath;
+struct ScanConfig {
+    std::filesystem::path filePath;    
+    std::filesystem::path directoryPath;
+    std::filesystem::path outputFile = "statistics.json";
+    std::filesystem::path patternConfigFile;
+
     bool recursive = false;
     std::string strategy = "regex";
-    std::string outputFile = "statistics.json";
-    std::string patternConfigFile;
+
     std::map<std::string, std::vector<std::string>> patterns;
     std::map<std::string, std::vector<std::string>> keywords;
 };

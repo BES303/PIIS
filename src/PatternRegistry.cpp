@@ -10,7 +10,7 @@ void PatternRegistry::registryProvider(const std::string& type, std::function<st
     _providers[type] = std::move(creator);
 }
 
-void PatternRegistry::loadPatterns(const std::string& providerType, const std::string& configFile)
+void PatternRegistry::loadPatterns(const std::string& providerType, const std::filesystem::path& configFile)
 {
     auto it = _providers.find(providerType);
 

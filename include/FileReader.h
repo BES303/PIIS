@@ -10,24 +10,20 @@
 
 class FileReader
 {
-    
-protected:
-    std::string filePath;
-
 public:
-    virtual std::string readText(const std::string& filePath) = 0;
+    virtual std::string readText(const std::filesystem::path& filePath) = 0;
     virtual ~FileReader() {}
 };
 
 class TxtReader : public FileReader
 {
 public:
-    std::string readText(const std::string& filePath) override
+    std::string readText(const std::filesystem::path& filePath) override
     {
-        std::ifstream file(filePath);
+        std::ifstream file(filePath, std::ios::binary);
 
         if (!file.is_open())
-            throw std::runtime_error("Cannot open file: " + filePath);
+            throw std::runtime_error("Cannot open file: " + filePath.string());
 
         std::string fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         return fileData;
@@ -37,20 +33,21 @@ public:
 class PdfReader : public FileReader
 {
 public:
-    std::string readText(const std::string& filePath) override
+    std::string readText(const std::filesystem::path& filePath) override
     {
         try
         {
-            std::unique_ptr<poppler::document> pdf(poppler::document::load_from_file(filePath));
-            
+            auto u8Path = filePath.u8string();
+            std::string utf8Path(u8Path.begin(), u8Path.end());
+            auto pdf = poppler::document::load_from_file(utf8Path);
             if (!pdf)
-                throw std::runtime_error("Failed to load PDF file: " + filePath);
+                throw std::runtime_error("Failed to load PDF: " + utf8Path);
 
             if (pdf->is_locked())
-                return "";
+                return {};
 
             std::string text;
-            const int pages = pdf->pages();
+            const auto pages = pdf->pages();
 
             for (auto page = 0; page < pages; ++page)
             {
@@ -74,7 +71,7 @@ public:
 class DocReader : public FileReader
 {
 public:
-    std::string readText(const std::string& filePath) override
+    std::string readText(const std::filesystem::path& filePath) override
     {
         throw std::runtime_error("DOC not supported");
     }
@@ -83,12 +80,12 @@ public:
 
 //  ....jpg
 
-class FileReaderFactory
+class ReaderFactory
 {
 public:
-    static std::unique_ptr<FileReader> createReader(const std::string& filePath)
+    static std::unique_ptr<FileReader> createReader(const std::filesystem::path& filePath)
     {
-        auto extension = std::filesystem::path(filePath).extension().string();
+        auto extension = filePath.extension().string();
 
         if (extension == ".txt")
             return std::make_unique<TxtReader>();

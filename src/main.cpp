@@ -4,8 +4,7 @@
 #include "FileReader.h"
 #include "PIIDetector.h"
 
-
-void scanFile(const std::string& filePath, PIIDetector& detector) //TODO
+void scanFile(const std::filesystem::path& filePath, PIIDetector& detector) //TODO
 {
     if (!std::filesystem::exists(filePath))
     {
@@ -13,7 +12,7 @@ void scanFile(const std::string& filePath, PIIDetector& detector) //TODO
         return;
     }
 
-    auto reader = FileReaderFactory::createReader(filePath);
+    auto reader = ReaderFactory::createReader(filePath);
     
     if (!reader)
         return;
@@ -29,7 +28,7 @@ void scanFile(const std::string& filePath, PIIDetector& detector) //TODO
     }
 }
 
-void scanDirectory(const std::string& dirPath, bool recursive, PIIDetector& detector) //TODO
+void scanDirectory(const std::filesystem::path& dirPath, bool recursive, PIIDetector& detector) //TODO
 {
     try {
         if (!std::filesystem::exists(dirPath))

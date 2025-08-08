@@ -1,35 +1,18 @@
 #include <PIIScanner.h>
-#include <re2/re2.h>
 
 std::map<std::string, std::vector<std::string>> RegexStrategy::scan(const std::string& text)
 {
     std::map<std::string, std::vector<std::string>> result;
 
-    for (const auto& [type, regexList] : _patterns)
+    for (const auto& [type, regexList]: _cmpPatterns)
     {
-        for (const auto& pattern : regexList)
+        for (const auto& re: regexList)
         {
-            try
-            {
-                re2::RE2 re(pattern);
+            re2::StringPiece input(text);
+            std::string matchData;
 
-                if (!re.ok())
-                {
-                    std::cerr << "RegexStrategy: Invalid regex pattern for type '" << type << "': " << re.error() << std::endl;
-                    continue;
-                }
-
-                re2::StringPiece input(text);
-                std::string matchData;
-                
-                while (RE2::FindAndConsume(&input, re, &matchData))
-                    result[type].push_back(matchData);
-
-            }
-            catch (const std::exception& e)
-            {
-                std::cerr << "RegexStrategy: Error processing pattern type '" << type << "': " << e.what() << std::endl;
-            }
+            while (RE2::FindAndConsume(&input, *re, &matchData)) 
+                result[type].push_back(matchData);
         }
     }
 
