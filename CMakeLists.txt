@@ -15,17 +15,7 @@ add_executable(PIIScanner
     ${SOURCE_DIR}/PatternRegistry.cpp
     ${SOURCE_DIR}/PIIResultHandler.cpp
     ${SOURCE_DIR}/clp.cpp
-
-    ${INCLUDE_DIR}/clp.h
-    ${INCLUDE_DIR}/PIIScanner.h
-    ${INCLUDE_DIR}/FileReader.h
-    ${INCLUDE_DIR}/PatternRegistry.h
-    ${INCLUDE_DIR}/PIIConfigger.h
-    ${INCLUDE_DIR}/ScanConfig.h
-    ${INCLUDE_DIR}/PIIResultHandler.h
-    ${INCLUDE_DIR}/PIIGeneralStats.h
 )
-
 
 target_include_directories(PIIScanner PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}
