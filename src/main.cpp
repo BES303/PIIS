@@ -3,8 +3,10 @@
 #include "PIIConfigger.h"
 #include "FileReader.h"
 #include "PIIDetector.h"
+#include "PIIResultExporter.h"
+#include "PIIResultHandler.h"
 
-void scanFile(const std::filesystem::path& filePath, PIIDetector& detector) //TODO
+void scanFile(const std::filesystem::path& filePath, PIIDetector& detector, PIIResultHandler& resultProcessor) //TODO
 {
     if (!std::filesystem::exists(filePath))
     {
@@ -20,7 +22,8 @@ void scanFile(const std::filesystem::path& filePath, PIIDetector& detector) //TO
     try
     {
         std::string data = reader->readText(filePath);
-        detector.scan(data, filePath);
+        auto scanResult = detector.scan(data);
+        resultProcessor.processResult(filePath, scanResult);
     }
     catch (const std::runtime_error& e)
     {
@@ -28,21 +31,22 @@ void scanFile(const std::filesystem::path& filePath, PIIDetector& detector) //TO
     }
 }
 
-void scanDirectory(const std::filesystem::path& dirPath, bool recursive, PIIDetector& detector) //TODO
+void scanDirectory(const std::filesystem::path& dirPath, bool recursive, PIIDetector& detector, PIIResultHandler& resultProcessor) //TODO
 {
-    try {
+    try
+    {
         if (!std::filesystem::exists(dirPath))
         {
             std::cerr << "Directory does not exist: " << dirPath << std::endl;
             return;
         }
 
-        auto processFile = [&detector](const std::filesystem::path& filePath)
+        auto processFile = [&detector, &resultProcessor](const std::filesystem::path& filePath)
         {
             try
             {
                 if (std::filesystem::is_regular_file(filePath))
-                    scanFile(filePath.string(), detector);
+                    scanFile(filePath, detector, resultProcessor);
             }
             catch (const std::filesystem::filesystem_error& e)
             {
@@ -83,15 +87,15 @@ void scanDirectory(const std::filesystem::path& dirPath, bool recursive, PIIDete
 
 int main(int argc, char* argv[])
 {
-    PIIConfigger configger (argc, argv);
+    PIIConfigger configger(argc, argv);
 
-    if (configger.isHelpRequested()) //TODO
+    if (configger.isHelpRequested())
     {
         configger.showHelp();
         return 0;
     }
 
-    ScanConfig config = configger.getConfig();  //TODO: patterns
+    ScanConfig config = configger.getConfig();
 
     if (config.filePath.empty() && config.directoryPath.empty())
     {
@@ -99,18 +103,24 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    auto piiStrategy = PIIStrategyHandler::createStrategy(config.strategy, config.patterns, config.keywords); //TODO: -/   /-
-    
-    PIIDetector detector(std::move(piiStrategy), config.outputFile);
+    auto piiStrategy = PIIStrategyHandler::createStrategy(config.strategy, config.patterns, config.keywords);//
+
+    std::vector<std::unique_ptr<IPIIResultExporter>> exporters;
+    exporters.push_back(std::make_unique<ConsoleExporter>());
+
+    if (!config.outputJson.empty())
+        exporters.push_back(std::make_unique<JsonExporter>(config.outputJson));
+
+    PIIDetector detector(std::move(piiStrategy));
+
+    PIIResultHandler resultProcessor(std::move(exporters));
 
     if (!config.filePath.empty())
-        scanFile(config.filePath, detector);
-
-    // TODO: 
-    // 2 scan 1 file & dir
+        scanFile(config.filePath, detector, resultProcessor);
 
     if (!config.directoryPath.empty())
-        scanDirectory(config.directoryPath, config.recursive, detector);
+        scanDirectory(config.directoryPath, config.recursive, detector, resultProcessor);
 
+    resultProcessor.finalize();
     return 0;
 }

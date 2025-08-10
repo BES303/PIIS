@@ -1,45 +1,37 @@
 #ifndef PIIRESULTHANDLER_H
 #define PIIRESULTHANDLER_H
-
 #include "PIIGeneralStats.h"
-#include <map>
-#include <vector>
-#include <string>
-#include <memory>
-#include <nlohmann/json.hpp>
 
-class IPIIResultExporter
+class PIIResultHandler
 {
 public:
-    virtual ~IPIIResultExporter() = default;
-    virtual void processFileResults(const std::filesystem::path& filePath,
-        const std::map<std::string, std::vector<std::string>>& results, double duration) = 0;
+    explicit PIIResultHandler(std::vector<std::unique_ptr<IPIIResultExporter>> exporters,
+        std::unique_ptr<PIIGeneralStats> stats = std::make_unique<PIIGeneralStats>())
+        : _stats(std::move(stats)), _exporters(std::move(exporters))
+    {
+        if (_exporters.empty())
+            throw std::invalid_argument("At least one exporter must be provided");
+    }
 
-    virtual void finalize(const PIIGeneralStats::Stats& stats) = 0;
-};
+    void processResult(const std::filesystem::path& filePath, const PIIDetector::ScanResult& result)
+    {
+        _stats->addRecord(result.matches, result.duration);
 
-class ConsoleExporter : public IPIIResultExporter
-{
-public:
-    void processFileResults(const std::filesystem::path& filePath,
-        const std::map<std::string, std::vector<std::string>>& results, double duration) override;
+        for (auto& exporter : _exporters)
+            exporter->processFileResults(filePath, result.matches, result.duration);
+    }
 
-    void finalize(const PIIGeneralStats::Stats& stats) override;
-};
+    void finalize()
+    {
+        auto stats = _stats->getStats();
 
-class JsonExporter : public IPIIResultExporter
-{
-public:
-    explicit JsonExporter(const std::filesystem::path& outputFile);
-    ~JsonExporter();
+        for (auto& exporter : _exporters)
+            exporter->finalize(stats);
+    }
 
-    void processFileResults(const std::filesystem::path& filePath,
-        const std::map<std::string, std::vector<std::string>>& results, double duration) override;
-
-    void finalize(const PIIGeneralStats::Stats& stats) override;
 private:
-    std::filesystem::path outputFile;
-    nlohmann::json jsonData;
+    std::unique_ptr<PIIGeneralStats> _stats;
+    std::vector<std::unique_ptr<IPIIResultExporter>> _exporters;
 };
 
-#endif // PIIRESULTHANDLER_H
+#endif PIIRESULTHANDLER_H

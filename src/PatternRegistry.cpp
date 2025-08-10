@@ -10,7 +10,7 @@ void PatternRegistry::registryProvider(const std::string& type, std::function<st
     _providers[type] = std::move(creator);
 }
 
-void PatternRegistry::loadPatterns(const std::string& providerType, const std::filesystem::path& configFile)
+void PatternRegistry::loadPatterns(const std::string& providerType)
 {
     auto it = _providers.find(providerType);
 
@@ -42,7 +42,15 @@ void JsonProvider::provide(std::map<std::string, std::vector<std::string>>& patt
     }
 
     nlohmann::json json;
-    file >> json;
+
+    try
+    {
+        file >> json;
+    }
+    catch (const nlohmann::json::exception& e)
+    {
+        throw std::runtime_error("Invalid JSON: " + std::string(e.what()));
+    }
 
     if (json.contains("patterns"))
     {

@@ -2,7 +2,7 @@
 #include "PatternRegistry.h"
 
 
-PIIConfigger::PIIConfigger(int argc, char* argv[]): _parser(std::make_unique<clp>(argc, argv)),
+PIIConfigger::PIIConfigger(int argc, char* argv[]): _parser(std::make_unique<CLI>(argc, argv)),
     _patternRegistry(std::make_unique<PatternRegistry>()) {}
 
 bool PIIConfigger::isHelpRequested() const
@@ -21,14 +21,16 @@ ScanConfig PIIConfigger::getConfig() const
 
     if (!config.patternConfigFile.empty())
     {
-        _patternRegistry->registryProvider("json", []() { return std::make_unique<JsonProvider>(); });
-        _patternRegistry->loadPatterns("json", config.patternConfigFile);
+        auto configFile = config.patternConfigFile.string();
+        _patternRegistry->registryProvider("json", [configFile]() { return std::make_unique<JsonProvider>(configFile); });
+        _patternRegistry->loadPatterns("json");
     }
     else
     {
         _patternRegistry->registryProvider("default", []() { return std::make_unique<DefaultProvider>(); });
         _patternRegistry->loadPatterns("default");
     }
+
 
     config.patterns = _patternRegistry->getPatterns();
     config.keywords = _patternRegistry->getKeywords();

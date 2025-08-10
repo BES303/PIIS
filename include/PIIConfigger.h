@@ -1,7 +1,7 @@
 #ifndef PIICONFIGGER_H
 #define PIICONFIGGER_H
 
-#include "clp.h"
+#include "CLI.h"
 #include "ScanConfig.h"
 #include "PatternRegistry.h"
 
@@ -14,7 +14,7 @@ public:
     bool isHelpRequested() const;
 
 private:
-    std::unique_ptr<clp> _parser;
+    std::unique_ptr<CLI> _parser;
     std::unique_ptr<PatternRegistry> _patternRegistry;
 };
 

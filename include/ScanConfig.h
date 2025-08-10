@@ -6,10 +6,11 @@
 #include <filesystem>
 #include <map>
 
-struct ScanConfig {
+struct ScanConfig
+{
     std::filesystem::path filePath;    
     std::filesystem::path directoryPath;
-    std::filesystem::path outputFile = "statistics.json";
+    std::filesystem::path outputJson;
     std::filesystem::path patternConfigFile;
 
     bool recursive = false;

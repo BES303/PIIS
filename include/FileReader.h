@@ -7,7 +7,7 @@
 #include <poppler/cpp/poppler-document.h>
 #include <poppler/cpp/poppler-page.h>
 
-
+// TODO: add chunkHandler
 class FileReader
 {
 public:
@@ -40,11 +40,12 @@ public:
             auto u8Path = filePath.u8string();
             std::string utf8Path(u8Path.begin(), u8Path.end());
             auto pdf = poppler::document::load_from_file(utf8Path);
+
             if (!pdf)
                 throw std::runtime_error("Failed to load PDF: " + utf8Path);
 
             if (pdf->is_locked())
-                return {};
+                throw std::runtime_error("Encrypted PDF: " + filePath.string());
 
             std::string text;
             const auto pages = pdf->pages();

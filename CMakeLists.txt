@@ -10,11 +10,12 @@ set(INCLUDE_DIR include)
 
 add_executable(PIIScanner
     ${SOURCE_DIR}/main.cpp
-    ${SOURCE_DIR}/PIIScanner.cpp
+    ${SOURCE_DIR}/PIIRecognizer.cpp
     ${SOURCE_DIR}/PIIConfigger.cpp
     ${SOURCE_DIR}/PatternRegistry.cpp
-    ${SOURCE_DIR}/PIIResultHandler.cpp
-    ${SOURCE_DIR}/clp.cpp
+    ${SOURCE_DIR}/PIIResultExporter.cpp
+    ${SOURCE_DIR}/CLI.cpp
+
 )
 
 target_include_directories(PIIScanner PUBLIC
@@ -32,8 +33,7 @@ target_link_libraries(PIIScanner PRIVATE
     nlohmann_json::nlohmann_json
     cxxopts::cxxopts
     PkgConfig::POPPLER_CPP
-    re2::re2
-)
+    re2::re2)
 
 include(GNUInstallDirs)
 install(TARGETS PIIScanner
