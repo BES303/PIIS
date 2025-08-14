@@ -53,7 +53,5 @@ int main(int argc, char* argv[])
     if (!config.directoryPath.empty())
         scanner.scan(config.directoryPath, config.recursive);
 
-    resultProcessor.finalize();
-
     return 0;
 }
