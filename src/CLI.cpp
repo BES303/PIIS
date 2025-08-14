@@ -31,9 +31,9 @@ void CLI::showHelp() const
     std::cout << _options.help() << std::endl;
 }
 
-ScanConfig CLI::parse()
+GeneralConfig CLI::parse()
 {
-    ScanConfig config;
+    GeneralConfig config;
 
     if (_result.count("file"))
         config.filePath = _result["file"].as<std::string>();

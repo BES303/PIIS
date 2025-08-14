@@ -15,9 +15,9 @@ void PIIConfigger::showHelp() const
     return _parser->showHelp();
 }
 
-ScanConfig PIIConfigger::getConfig() const
+GeneralConfig PIIConfigger::getConfig() const
 {
-    ScanConfig config = _parser->parse();
+    GeneralConfig config = _parser->parse();
 
     if (!config.patternConfigFile.empty())
     {

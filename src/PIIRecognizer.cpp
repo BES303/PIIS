@@ -19,7 +19,7 @@ std::map<std::string, std::vector<std::string>> RegexStrategy::scan(const std::s
     return result;
 }
 
-std::map<std::string, std::vector<std::string>> KeywordStrategy::scan(const std::string& text)
+std::map<std::string, std::vector<std::string>> KeywordStrategy::scan(const std::string& text) // TODO: opt
 {
     std::map<std::string, std::vector<std::string>> result;
 

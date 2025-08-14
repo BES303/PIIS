@@ -3,12 +3,11 @@
 
 #include <string>
 #include <vector>
-#include <filesystem>
 #include <map>
 
-struct ScanConfig
+struct GeneralConfig
 {
-    std::filesystem::path filePath;    
+    std::filesystem::path filePath; 
     std::filesystem::path directoryPath;
     std::filesystem::path outputJson;
     std::filesystem::path patternConfigFile;

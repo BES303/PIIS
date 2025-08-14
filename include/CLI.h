@@ -2,13 +2,13 @@
 #define CLI_H
 
 #include <cxxopts.hpp>
-#include "ScanConfig.h"
+#include "GeneralConfig.h"
 
 class CLI
 {
 public:
     CLI(int argc, char* argv[]);
-    ScanConfig parse();
+    GeneralConfig parse();
     void showHelp() const;
     bool isHelpRequested() const noexcept { return _result.count("help") > 0; }
 

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <map>
 #include <regex>
-#include <atomic>
 #include <re2/re2.h>
 
 class IStrategyScanner
@@ -24,7 +23,15 @@ public:
         for (const auto& [type, regexList] : patterns)
         {
             for (const auto& pattern : regexList)
-                _cmpPatterns[type].push_back(std::make_unique<re2::RE2>(pattern));
+            {
+                auto re = std::make_unique<re2::RE2>(pattern);
+
+                if (!re->ok())
+                    throw std::invalid_argument("Invalid regex pattern: " + pattern +
+                                              " (error: " + re->error() + ")");
+
+                _cmpPatterns[type].push_back(std::move(re));
+            }
 
         }
     }
@@ -75,8 +82,5 @@ public:
         throw;
     }
 };
-
-
-
 
 #endif // PIISCANNER_H

@@ -71,7 +71,7 @@ void JsonExporter::processFileResults(const std::filesystem::path& filePath,
     nlohmann::json record;
     record["file"] = filePath;
     record["duration"] = std::chrono::duration<double>(duration).count();
-    record["timestamp"] = std::chrono::system_clock::now().time_since_epoch().count();;
+    record["timestamp"] = std::chrono::system_clock::now().time_since_epoch().count();
 
     nlohmann::json matches;
 

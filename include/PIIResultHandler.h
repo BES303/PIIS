@@ -1,5 +1,6 @@
 #ifndef PIIRESULTHANDLER_H
 #define PIIRESULTHANDLER_H
+
 #include "PIIGeneralStats.h"
 
 class PIIResultHandler
@@ -13,12 +14,14 @@ public:
             throw std::invalid_argument("At least one exporter must be provided");
     }
 
-    void processResult(const std::filesystem::path& filePath, const PIIDetector::ScanResult& result)
+    void processResult(const std::filesystem::path& filePath,
+        const PIIDetector::DetectorResult& result,
+        double totalTime)
     {
-        _stats->addRecord(result.matches, result.duration);
+        _stats->addRecord(result.matches, totalTime);
 
         for (auto& exporter : _exporters)
-            exporter->processFileResults(filePath, result.matches, result.duration);
+            exporter->processFileResults(filePath, result.matches, totalTime);
     }
 
     void finalize()
@@ -34,4 +37,4 @@ private:
     std::vector<std::unique_ptr<IPIIResultExporter>> _exporters;
 };
 
-#endif PIIRESULTHANDLER_H
+#endif //PIIRESULTHANDLER_H

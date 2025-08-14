@@ -21,8 +21,8 @@ class PatternRegistry
 public:
     void registryProvider(const std::string& type, std::function<std::unique_ptr<IPatternProvider>()> creator);
     void loadPatterns(const std::string& providerType);
-    const auto& getPatterns() const { return _patterns; }
-    const auto& getKeywords() const { return _keywords; }
+    const std::map<std::string, std::vector<std::string>>& getPatterns() const { return _patterns; }
+    const std::map<std::string, std::vector<std::string>>& getKeywords() const { return _keywords; }
 
 private:
     std::map<std::string, std::function<std::unique_ptr<IPatternProvider>()>> _providers;

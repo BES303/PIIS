@@ -6,16 +6,20 @@
 #include <fstream>
 #include <poppler/cpp/poppler-document.h>
 #include <poppler/cpp/poppler-page.h>
+#include <vector>
+#include <map>
+#include <functional>
+#include <memory>
 
-// TODO: add chunkHandler
-class FileReader
+// TODO: OCREngine & image reader
+class ReaderBase
 {
 public:
     virtual std::string readText(const std::filesystem::path& filePath) = 0;
-    virtual ~FileReader() {}
+    virtual ~ReaderBase() {}
 };
 
-class TxtReader : public FileReader
+class TxtReader: public ReaderBase
 {
 public:
     std::string readText(const std::filesystem::path& filePath) override
@@ -30,7 +34,7 @@ public:
     }
 };
 
-class PdfReader : public FileReader
+class PdfReader: public ReaderBase
 {
 public:
     std::string readText(const std::filesystem::path& filePath) override
@@ -42,10 +46,10 @@ public:
             auto pdf = poppler::document::load_from_file(utf8Path);
 
             if (!pdf)
-                throw std::runtime_error("Failed to load PDF: " + utf8Path);
+                throw std::runtime_error("Failed to load PDF: " + filePath.string());
 
             if (pdf->is_locked())
-                throw std::runtime_error("Encrypted PDF: " + filePath.string());
+                throw std::runtime_error("Encrypted PDF not supported: " + filePath.string());
 
             std::string text;
             const auto pages = pdf->pages();
@@ -59,7 +63,7 @@ public:
                     text += std::string(byte_array.begin(), byte_array.end());
                 }
             }
-            
+
             return text;
         }
         catch (const std::exception& e)
@@ -69,7 +73,7 @@ public:
     }
 };
 
-class DocReader : public FileReader
+class DocReader: public ReaderBase
 {
 public:
     std::string readText(const std::filesystem::path& filePath) override
@@ -78,28 +82,127 @@ public:
     }
 };
 
+class ReaderRegistry
+{
+public:
 
-//  ....jpg
+    void registerReader(const std::string& extension, std::function<std::unique_ptr<ReaderBase>()> readerCreator)
+    {
+        const auto normalizedExt = normalizeExtension(extension);
+        _readers[normalizedExt] = std::move(readerCreator);
+    }
+
+    std::unique_ptr<ReaderBase> getReader(const std::filesystem::path& filePath) const
+    {
+        const auto normalizedExt = normalizeExtension(filePath.extension().string());
+
+        if (auto it = _readers.find(normalizedExt); it != _readers.end())
+            return it->second();
+
+        throw std::runtime_error("Unsupported file format: " + filePath.extension().string());
+    }
+
+    bool isSupported(const std::filesystem::path& filePath) const
+    {
+        const auto normalizedExt = normalizeExtension(filePath.extension().string());
+        return _readers.contains(normalizedExt);
+    }
+
+    std::vector<std::string> getSupportedExtensions() const
+    {
+        std::vector<std::string> extensions;
+        extensions.reserve(_readers.size());
+
+        for (const auto& extension: _readers)
+            extensions.push_back(extension.first);
+
+        return extensions;
+    }
+
+    void registerReaderForExtensions(const std::vector<std::string>& extensions,
+        std::function<std::unique_ptr<ReaderBase>()> readerCreator)
+    {
+        for (const auto& extension : extensions)
+            registerReader(extension, readerCreator);
+    }
+
+    bool isEmpty() const
+    {
+        return _readers.empty();
+    }
+
+    size_t size() const
+    {
+        return _readers.size();
+    }
+
+    static std::string normalizeExtension(std::string ext) // .
+    {
+        std::transform(ext.begin(), ext.end(), ext.begin(),
+            [](unsigned char c) { return std::tolower(c); });
+        return ext;
+    }
+
+private:
+    std::map<std::string, std::function<std::unique_ptr<ReaderBase>()>> _readers;
+};
 
 class ReaderFactory
 {
 public:
-    static std::unique_ptr<FileReader> createReader(const std::filesystem::path& filePath)
-    {
-        auto extension = filePath.extension().string();
+    ReaderFactory() : _registry(std::make_unique<ReaderRegistry>())
+    {}
 
-        if (extension == ".txt")
-            return std::make_unique<TxtReader>();
-        else if (extension == ".pdf")
-            return std::make_unique<PdfReader>();
-        else if (extension == ".doc" || extension == ".docx")
-            return std::make_unique<DocReader>();
-        else
-        {
-            std::cerr << "Unsupported file format: " << filePath << std::endl;
-            return nullptr;
-        }
+    explicit ReaderFactory(std::unique_ptr<ReaderRegistry> registry) : _registry(std::move(registry))
+    {
+        if (!_registry)
+            throw std::invalid_argument("Registry cannot be null");
     }
+
+    template<typename T>
+    void registerReader(const std::string& extension)
+    {
+        _registry->registerReader(extension, []() { return std::make_unique<T>(); });
+    }
+
+    template<typename T>
+    void registerReaderForExtensions(const std::vector<std::string>& extensions)
+    {
+        _registry->registerReaderForExtensions(extensions, []() { return std::make_unique<T>(); });
+    }
+
+    std::unique_ptr<ReaderBase> getReader(const std::filesystem::path& filePath) const
+    {
+        return _registry->getReader(filePath);
+    }
+
+    bool isSupported(const std::filesystem::path& filePath) const
+    {
+        return _registry->isSupported(filePath);
+    }
+
+    std::vector<std::string> getSupportedExtensions() const
+    {
+        return _registry->getSupportedExtensions();
+    }
+
+    const ReaderRegistry& getRegistry() const
+    {
+        return *_registry;
+    }
+
+    bool isEmpty() const
+    {
+        return _registry->isEmpty();
+    }
+
+    size_t size() const
+    {
+        return _registry->size();
+    }
+
+private:
+    std::unique_ptr<ReaderRegistry> _registry;
 };
 
 #endif // FILEREADER_H

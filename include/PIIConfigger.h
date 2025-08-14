@@ -2,14 +2,14 @@
 #define PIICONFIGGER_H
 
 #include "CLI.h"
-#include "ScanConfig.h"
+#include "GeneralConfig.h"
 #include "PatternRegistry.h"
 
 class PIIConfigger
 {
 public:
     PIIConfigger(int argc, char* argv[]);
-    ScanConfig getConfig() const;
+    GeneralConfig getConfig() const;
     void showHelp() const;
     bool isHelpRequested() const;
 

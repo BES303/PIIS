@@ -5,7 +5,7 @@
 
 
 
-void PatternRegistry::registryProvider(const std::string& type, std::function<std::unique_ptr<IPatternProvider>()> creator)
+void PatternRegistry::registryProvider(const std::string& type, std::function<std::unique_ptr<IPatternProvider>()> creator) ////
 {
     _providers[type] = std::move(creator);
 }
@@ -25,7 +25,7 @@ void PatternRegistry::loadPatterns(const std::string& providerType)
 }
 
 void JsonProvider::provide(std::map<std::string, std::vector<std::string>>& patterns,
-             std::map<std::string, std::vector<std::string>>& keywords)
+             std::map<std::string, std::vector<std::string>>& keywords) //
 {
     if (_configFile.empty())
     {
@@ -77,7 +77,8 @@ void DefaultProvider::provide(std::map<std::string, std::vector<std::string>>& p
         }},
 
         {"phone", {
-            R"(\+(\d{11}|\d \d{3} \d{3}-\d{2}-\d{2}|\d \(\d{3}\)\s*\d{3}-\d{4})\b)"}},
+            R"(\+(\d{11}|\d \d{3} \d{3}-\d{2}-\d{2}|\d \(\d{3}\)\s*\d{3}-\d{4})\b)",
+            R"((\+7\s*\(\d{3}\)\s*\d{3}-\d{2}-\d{2}))"}},
 
         {"ip", {
             R"(\b((?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9]))\b)"}},
