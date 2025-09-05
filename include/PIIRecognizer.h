@@ -67,19 +67,16 @@ private:
     std::map<std::string, std::vector<std::string>> _lowerKeywords;
 };
 
-class PIIStrategyHandler
+struct PIIStrategyHandler
 {
-public:
-    static std::unique_ptr<IStrategyScanner> createStrategy(const std::string& strategyType,
-        const std::map<std::string, std::vector<std::string>>& patterns, const std::map<std::string, std::vector<std::string>>& keywords) //TODO: collect strat
+    static std::unique_ptr<IStrategyScanner> createRegexStrategy(const std::map<std::string, std::vector<std::string>>& patterns)
     {
-        if (strategyType == "regex")
-            return std::make_unique<RegexStrategy>(patterns);
+        return std::make_unique<RegexStrategy>(patterns);
+    }
 
-        else if (strategyType == "keyword")
-            return std::make_unique<KeywordStrategy>(keywords);
-
-        throw;
+    static std::unique_ptr<IStrategyScanner> createKeywordStrategy(const std::map<std::string, std::vector<std::string>>& keywords)
+    {
+        return std::make_unique<KeywordStrategy>(keywords);
     }
 };
 

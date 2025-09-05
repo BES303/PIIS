@@ -57,8 +57,7 @@ void ConsoleExporter::finalize(const PIIGeneralStats::Stats& stats)
 }
 
 
-JsonExporter::JsonExporter(const std::filesystem::path& outputFile)
-    : outputFile(outputFile)
+JsonExporter::JsonExporter(const std::filesystem::path& outputFile): outputFile(outputFile)
 {
     jsonData["records"] = nlohmann::json::array();
 }

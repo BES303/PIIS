@@ -8,12 +8,12 @@
 #include <iostream>
 #include "PIIDetector.h"
 #include "PIIResultHandler.h"
-#include "FileReader.h"
+#include "FileReaders.h"
 
 struct DirWalker
 {
     static std::vector<std::filesystem::path> getFiles(const std::filesystem::path& path, bool recursive,
-        std::function<bool(const std::filesystem::path&)> fileFilter = nullptr)
+        std::function<bool(const std::filesystem::path&)> fileFilter = {})
     {
         std::vector<std::filesystem::path> files;
 
@@ -25,9 +25,9 @@ struct DirWalker
                 return files;
             }
 
-            auto processEntry = [&](const auto& entry)
+            auto processEntry = [&fileFilter, &files](const auto& entry)
             {
-                if (std::filesystem::is_regular_file(entry.status()))
+                if (entry.is_regular_file())
                 {
                     const auto& filePath = entry.path();
 
@@ -66,10 +66,10 @@ struct DirWalker
     }
 };
 
-class PIIFileProcessor
+class PIIFileProcess
 {
 public:
-    PIIFileProcessor(PIIDetector& detector, PIIResultHandler& resultHandler, const ReaderFactory& readerFactory):
+    PIIFileProcess(PIIDetector& detector, PIIResultHandler& resultHandler, const FileReaderFactory& readerFactory):
           _detector(detector),
           _resultHandler(resultHandler),
           _reader(readerFactory) {}
@@ -105,18 +105,17 @@ public:
 private:
     PIIDetector& _detector;
     PIIResultHandler& _resultHandler;
-    const ReaderFactory& _reader;
+    const FileReaderFactory& _reader;
 };
 
 class PIIScanner
 {
 public:
-    PIIScanner(PIIDetector& detector, PIIResultHandler& resultHandler,  const ReaderFactory& readerFactory)
+    PIIScanner(PIIDetector& detector, PIIResultHandler& resultHandler,  const FileReaderFactory& readerFactory)
         : _detector(detector),
           _resultHandler(resultHandler),
           _reader(readerFactory),
-          _dirWalker(std::make_unique<DirWalker>()),
-          _fileProcess(std::make_unique<PIIFileProcessor>(detector, resultHandler, readerFactory)) {}
+          _fileProcess(detector, resultHandler, readerFactory) {}
 
     void scan(const std::filesystem::path& path, bool recursive = false)
     {
@@ -124,7 +123,7 @@ public:
 
         if (std::filesystem::is_directory(path))
         {
-            files = _dirWalker->getFiles(path, recursive,
+            files = DirWalker::getFiles(path, recursive,
                 [this](const auto& filePath)
                 {
                     return _reader.isSupported(filePath);
@@ -147,8 +146,8 @@ public:
             return;
         }
 
-        for (const auto& file : files)
-            _fileProcess->processFile(file);
+        for (const auto& file: files)
+            _fileProcess.processFile(file);
 
         _resultHandler.finalize();
     }
@@ -156,10 +155,9 @@ public:
 private:
     PIIDetector& _detector;
     PIIResultHandler& _resultHandler;
-    const ReaderFactory& _reader;
+    const FileReaderFactory& _reader;
 
-    std::unique_ptr<DirWalker> _dirWalker; //
-    std::unique_ptr<PIIFileProcessor> _fileProcess; //
+    PIIFileProcess _fileProcess; //
 };
 
 #endif // SCANNER_H

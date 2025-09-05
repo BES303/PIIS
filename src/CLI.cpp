@@ -35,11 +35,15 @@ GeneralConfig CLI::parse()
 {
     GeneralConfig config;
 
-    if (_result.count("file"))
-        config.filePath = _result["file"].as<std::string>();
+    if (_result.count("file") && _result.count("directory"))
+        throw std::runtime_error("Error: Cannot specify both file and directory simultaneously");
 
-    if (_result.count("directory"))
-        config.directoryPath = _result["directory"].as<std::string>();
+
+    if (_result.count("file"))
+        config.inputPath = _result["file"].as<std::string>();
+
+    else if (_result.count("directory"))
+        config.inputPath = _result["directory"].as<std::string>();
 
     config.recursive = _result["recursive"].as<bool>();
     config.strategy = _result["strategy"].as<std::string>();

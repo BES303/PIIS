@@ -28,7 +28,7 @@ public:
     {
         auto stats = _stats->getStats();
 
-        for (auto& exporter : _exporters)
+        for (auto& exporter: _exporters)
             exporter->finalize(stats);
     }
 

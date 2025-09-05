@@ -15,24 +15,31 @@ add_executable(PIIScanner
     ${SOURCE_DIR}/PatternRegistry.cpp
     ${SOURCE_DIR}/PIIResultExporter.cpp
     ${SOURCE_DIR}/CLI.cpp
-
+    ${SOURCE_DIR}/FileReaders.cpp
 )
 
 target_include_directories(PIIScanner PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}
 )
 
+find_package(pugixml CONFIG REQUIRED)
+find_package(libzippp CONFIG REQUIRED)
+
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(cxxopts CONFIG REQUIRED)
 find_package(RE2 CONFIG REQUIRED)
+find_package(xlnt REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(POPPLER_CPP REQUIRED IMPORTED_TARGET poppler-cpp)
 
 target_link_libraries(PIIScanner PRIVATE
+    pugixml::pugixml
+    libzippp::libzippp
     nlohmann_json::nlohmann_json
     cxxopts::cxxopts
     PkgConfig::POPPLER_CPP
+    xlnt::xlnt
     re2::re2)
 
 include(GNUInstallDirs)

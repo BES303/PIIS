@@ -31,7 +31,6 @@ GeneralConfig PIIConfigger::getConfig() const
         _patternRegistry->loadPatterns("default");
     }
 
-
     config.patterns = _patternRegistry->getPatterns();
     config.keywords = _patternRegistry->getKeywords();
     return config;
