@@ -84,15 +84,12 @@ public:
                 return;
             }
 
-            auto startTotal = std::chrono::high_resolution_clock::now();
             auto reader = _reader.getReader(filePath);
             auto data = reader->readText(filePath);
 
             auto scanResult = _detector.scan(data);
-            double durationTotal = std::chrono::duration<double>(
-                std::chrono::high_resolution_clock::now() - startTotal).count();
 
-            _resultHandler.processResult(filePath, scanResult, durationTotal);
+            _resultHandler.processResult(filePath, scanResult);
         }
 
         catch (const std::exception& e)

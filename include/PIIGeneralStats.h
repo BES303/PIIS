@@ -10,10 +10,10 @@ class PIIGeneralStats
 public:
     PIIGeneralStats() = default;
 
-    void addRecord(const std::map<std::string, std::vector<std::string>>& results, double totalTime)
+    void addRecord(const std::map<std::string, std::vector<std::string>>& results, double duration)
     {
         totalFiles++;
-        totalDuration += totalTime;
+        totalDuration += duration;
 
         for (const auto& [type, matches] : results)
         {
